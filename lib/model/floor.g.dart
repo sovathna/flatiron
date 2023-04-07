@@ -6,14 +6,12 @@ part of 'floor.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_FloorResponse _$$_FloorResponseFromJson(Map<String, dynamic> json) =>
-    _$_FloorResponse(
-      imageData: json['imgPath'] as String,
+FloorResponse _$FloorResponseFromJson(Map<String, dynamic> json) =>
+    FloorResponse(
       value: json['value'] as String,
     );
 
-Map<String, dynamic> _$$_FloorResponseToJson(_$_FloorResponse instance) =>
+Map<String, dynamic> _$FloorResponseToJson(FloorResponse instance) =>
     <String, dynamic>{
-      'imgPath': instance.imageData,
       'value': instance.value,
     };

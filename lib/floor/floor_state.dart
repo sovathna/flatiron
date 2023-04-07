@@ -1,15 +1,33 @@
-import 'dart:typed_data';
+import 'package:flutter/material.dart';
 
-import 'package:freezed_annotation/freezed_annotation.dart';
-part 'floor_state.freezed.dart';
+@immutable
+class FloorState {
+  final bool isInit;
+  final String value;
+  final bool isLoading;
+  final String error;
+  final int elapse;
 
-@Freezed()
-class FloorState with _$FloorState {
-  factory FloorState({
-    @Default(true) bool isInit,
-    String? value,
-    Uint8List? imageData,
-    @Default(false) bool isLoading,
-    String? error,
-  }) = _FloorState;
+  const FloorState({
+    this.isInit = true,
+    this.value = "",
+    this.isLoading = false,
+    this.error = "",
+    this.elapse = 0,
+  });
+
+  FloorState copyWith(
+      {bool? isInit,
+      bool? isLoading,
+      String? value,
+      String? error,
+      int? elapse}) {
+    return FloorState(
+      isInit: isInit ?? this.isInit,
+      isLoading: isLoading ?? this.isLoading,
+      value: value ?? this.value,
+      error: error ?? this.error,
+      elapse: elapse ?? this.elapse,
+    );
+  }
 }
