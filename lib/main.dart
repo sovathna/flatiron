@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:flatiron/home_widget.dart';
-import 'package:flatiron/login/login_widget.dart';
+import 'package:flatiron/ui/otp_verification/otp_verification_view_model.dart';
+import 'package:flatiron/ui/otp_verification/otp_verification_widget.dart';
+import 'package:flatiron/ui/signin/signin_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -38,7 +39,7 @@ class MainApp extends StatelessWidget {
         fontFamily: "Product Sans",
       ),
       themeMode: ThemeMode.light,
-      home: const LoginWidget(),
+      home: const OtpVerificationWidget("012121212"),
     );
   }
 }

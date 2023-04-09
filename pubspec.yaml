@@ -38,3 +38,8 @@ flutter:
         - asset: assets/fonts/product_sans/bold_italic.ttf
           weight: 700
           style: italic
+
+  assets:
+    - assets/icons/cellcard.jpg
+    - assets/icons/smart.jpg
+    - assets/icons/metfone.png

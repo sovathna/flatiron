@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flatiron/data/app_service.dart';
-import 'package:flatiron/floor/floor_state.dart';
+import 'package:flatiron/ui/floor/floor_state.dart';
 import 'package:flatiron/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

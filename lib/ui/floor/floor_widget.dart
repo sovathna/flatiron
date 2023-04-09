@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flatiron/data/data_module.dart';
-import 'package:flatiron/floor/floor_state.dart';
-import 'package:flatiron/floor/floor_view_model.dart';
+import 'package:flatiron/ui/floor/floor_state.dart';
+import 'package:flatiron/ui/floor/floor_view_model.dart';
 import 'package:flatiron/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
