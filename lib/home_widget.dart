@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final _homeViewModel = StateProvider<String>((ref) => "18");
 
-const _floors = ["G", "3", "18", "19", "25"];
+const _floors = ["00", "03", "18", "19", "25"];
 
 class HomeWidget extends ConsumerWidget {
   const HomeWidget({super.key});

@@ -90,7 +90,7 @@ class _PhoneEntryWidget extends ConsumerWidget {
                       ),
                       labelText: "Phone",
                       hintText: "Ex: 0123456789",
-                      errorText: ref.watch(_signinViewModel).validationError,
+                      errorText: ref.watch(_signinViewModel).error,
                     ),
                     onChanged: ref.read(_signinViewModel.notifier).setPhone,
                     onSubmitted: (value) => _onSubmitted(ref),

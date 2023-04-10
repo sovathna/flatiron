@@ -6,28 +6,28 @@ class SigninState {
   final String phone;
   final bool isLoading;
   final bool isInit;
-  final String? validationError;
+  final String? error;
   final bool isSuccess;
 
   const SigninState(
       {this.phone = "",
       this.isLoading = false,
       this.isInit = true,
-      this.validationError,
+      this.error,
       this.isSuccess = false});
 
   SigninState copyWith({
     String? phone,
     bool? isLoading,
     bool? isInit,
-    String? validationError,
+    String? error,
     bool? isSuccess,
   }) {
     return SigninState(
       phone: phone ?? this.phone,
       isLoading: isLoading ?? this.isLoading,
       isInit: isInit ?? this.isInit,
-      validationError: validationError,
+      error: error,
       isSuccess: isSuccess ?? this.isSuccess,
     );
   }

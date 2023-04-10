@@ -1,18 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flatiron/const.dart';
 import 'package:flatiron/data/app_service.dart';
+import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_state.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/adapters.dart';
 
 class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
-  OtpVerificationViewModel(this._service)
+  OtpVerificationViewModel(this._service, this._box)
       : super(const OtpVerificationState()) {
     startTimer();
   }
 
   final AppService _service;
+  final Box _box;
 
   final FocusNode focusNode = FocusNode();
 
@@ -25,9 +29,33 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
   }
 
   void verifyOtp() async {
-    state = state.copyWith(isLoading: true, error: "");
+    try {
+      state = state.copyWith(isLoading: true, error: "");
 
-    await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
+      final res = await _service.verifyOTP(state.phone, state.otp);
+      if (res.statusCode == 200) {
+        final Map<String, dynamic> maps = jsonDecode(res.body);
+        await _box.put("otp_verification_response", maps);
+        state = state.copyWith(isSuccess: true);
+      } else if (res.statusCode == 412) {
+        state = state.copyWith(
+          isLoading: false,
+          error: "Invalid OTP!",
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: "An error has occurred! [${res.statusCode}]",
+        );
+      }
+    } on Exception catch (e) {
+      logger.e(e);
+      state = state.copyWith(
+        isLoading: false,
+        error: "An error has occurred!",
+      );
+    }
 
     state = state.copyWith(isLoading: false, error: "An error has occurred!");
   }

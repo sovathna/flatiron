@@ -1,3 +1,4 @@
+import 'package:flatiron/const.dart';
 import 'package:flatiron/data/data_module.dart';
 import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_state.dart';
@@ -8,7 +9,11 @@ import 'package:pinput/pinput.dart';
 
 final _viewModel =
     StateNotifierProvider<OtpVerificationViewModel, OtpVerificationState>(
-        (ref) => OtpVerificationViewModel(ref.watch(appServiceProvider)));
+  (ref) => OtpVerificationViewModel(
+    ref.watch(appServiceProvider),
+    ref.watch(appBoxProvider),
+  ),
+);
 
 class OtpVerificationWidget extends ConsumerWidget {
   const OtpVerificationWidget(this.phone, {super.key});

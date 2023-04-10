@@ -1,4 +1,5 @@
 const int kOtpTimer = 5;
+const String appBox = "app_settings";
 
 class Const {
   static String cardNumber = "1110000661";

@@ -16,24 +16,24 @@ class SigninViewModel extends StateNotifier<SigninState> {
     try {
       state = state.copyWith(isLoading: true);
       final res = await _service.signin(state.phone);
-      if (res.statusCode == 200) {
+      if (res.statusCode == 200 && res.body == "OK") {
         state = state.copyWith(isSuccess: true);
       } else if (res.statusCode == 412) {
         state = state.copyWith(
           isLoading: false,
-          validationError: "Number is not registered!",
+          error: "Number is not registered!",
         );
       } else {
         state = state.copyWith(
           isLoading: false,
-          validationError: "An error has occurred! [${res.statusCode}]",
+          error: "An error has occurred! [${res.statusCode}]",
         );
       }
     } on Exception catch (e) {
       logger.e(e);
       state = state.copyWith(
         isLoading: false,
-        validationError: "An error has occurred!",
+        error: "An error has occurred!",
       );
     }
   }
@@ -44,15 +44,15 @@ class SigninViewModel extends StateNotifier<SigninState> {
 
   void setPhone(String value) {
     if (value.isEmpty) phoneInputController.clear();
-    state = state.copyWith(phone: value, validationError: null);
+    state = state.copyWith(phone: value, error: null);
   }
 
   void setValidationError() {
-    state = state.copyWith(validationError: "Invalid phone number!");
+    state = state.copyWith(error: "Invalid phone number!");
   }
 
   void clearValidationError() {
-    state = state.copyWith(validationError: null);
+    state = state.copyWith(error: null);
   }
 
   @override
