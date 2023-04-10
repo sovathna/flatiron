@@ -16,6 +16,7 @@ class SigninViewModel extends StateNotifier<SigninState> {
     try {
       state = state.copyWith(isLoading: true);
       final res = await _service.signin(state.phone);
+      if (!mounted) return;
       if (res.statusCode == 200 && res.body == "OK") {
         state = state.copyWith(isSuccess: true);
       } else if (res.statusCode == 412) {
@@ -57,6 +58,7 @@ class SigninViewModel extends StateNotifier<SigninState> {
 
   @override
   void dispose() {
+    logger.d("dispose");
     phoneInputFocusNode.dispose();
     phoneInputController.dispose();
     super.dispose();

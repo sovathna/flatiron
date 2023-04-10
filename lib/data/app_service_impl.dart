@@ -19,12 +19,11 @@ class AppServiceImpl implements AppService {
     final uri = Uri.parse(url);
     final res = await _client.post(
       uri,
-      body: jsonEncode({
+      body: {
         "phone": phone.substring(1),
         "phoneAreaCode": "855",
-        "email": null,
-      }),
-      headers: Const.floorHeaders,
+      },
+      headers: Const.signinHeaders,
     );
     final tmp = "Response: ${res.statusCode} ${res.reasonPhrase}\n${res.body}";
     logger.d(tmp);
@@ -38,15 +37,14 @@ class AppServiceImpl implements AppService {
     final uri = Uri.parse(url);
     final res = await _client.post(
       uri,
-      body: jsonEncode({
+      body: {
         "phone": phone.substring(1),
         "phoneAreaCode": "855",
-        "email": null,
         "otp": otp,
         "clientId":
             "A857D7C7F5DC0B2BC69F2AC40F58C0D2985405646BA32B3F1C66C7CA7ADD335A"
-      }),
-      headers: Const.floorHeaders,
+      },
+      headers: Const.signinHeaders,
     );
     final tmp = "Response: ${res.statusCode} ${res.reasonPhrase}\n${res.body}";
     logger.d(tmp);
@@ -54,13 +52,15 @@ class AppServiceImpl implements AppService {
   }
 
   @override
-  Future<FloorResponse> getFloor(String floor) async {
-    final url = "${Const.getFloor}?cardNo=${Const.cardNumber}&mainFloor=$floor";
+  Future<FloorResponse> getFloor(
+      String cardNumber, String bearerToken, String floor) async {
+    final url = "${Const.getFloor}?cardNo=$cardNumber&mainFloor=$floor";
     logger.d("Request: $url");
     final uri = Uri.parse(url);
     final res = await _client.get(
       uri,
-      headers: Const.floorHeaders,
+      headers: Const.signinHeaders
+        ..putIfAbsent("authorization", () => "Bearer $bearerToken"),
     );
     final tmp = "Response: ${res.statusCode} ${res.reasonPhrase}\n${res.body}";
     logger.d(tmp);
@@ -68,13 +68,14 @@ class AppServiceImpl implements AppService {
   }
 
   @override
-  Future<String> getLift(String value) async {
+  Future<String> getLift(String bearerToken, String value) async {
     final url = "${Const.getLift}$value";
     logger.d("Request: $url");
     final uri = Uri.parse(url);
     final res = await _client.get(
       uri,
-      headers: Const.floorHeaders,
+      headers: Const.signinHeaders
+        ..putIfAbsent("authorization", () => "Bearer $bearerToken"),
     );
     final tmp = "Response: ${res.statusCode} ${res.reasonPhrase}\n${res.body}";
     logger.d(tmp);

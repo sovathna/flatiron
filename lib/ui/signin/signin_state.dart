@@ -9,12 +9,13 @@ class SigninState {
   final String? error;
   final bool isSuccess;
 
-  const SigninState(
-      {this.phone = "",
-      this.isLoading = false,
-      this.isInit = true,
-      this.error,
-      this.isSuccess = false});
+  const SigninState({
+    this.phone = "",
+    this.isLoading = false,
+    this.isInit = true,
+    this.error,
+    this.isSuccess = false,
+  });
 
   SigninState copyWith({
     String? phone,

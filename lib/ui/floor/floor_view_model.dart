@@ -4,11 +4,14 @@ import 'package:flatiron/data/app_service.dart';
 import 'package:flatiron/ui/floor/floor_state.dart';
 import 'package:flatiron/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/adapters.dart';
 
 class FloorViewModel extends StateNotifier<FloorState> {
-  FloorViewModel(this._floor, this._service) : super(const FloorState());
+  FloorViewModel(this._floor, this._service, this._box)
+      : super(const FloorState());
 
   final String _floor;
+  final Box _box;
 
   final AppService _service;
   Timer? _timer;
@@ -18,7 +21,13 @@ class FloorViewModel extends StateNotifier<FloorState> {
     try {
       _cancelTimer();
       state = const FloorState(isInit: false, isLoading: true);
-      final res = await _service.getFloor(_floor);
+      final tmp = _box.get("otp_verification_response") as Map;
+
+      final res = await _service.getFloor(
+        tmp['data']['hikvisionCardNo'],
+        tmp['token'],
+        _floor,
+      );
       logger.d("Response: ${res.toJson()}");
       state = state.copyWith(
         isLoading: false,
@@ -40,7 +49,8 @@ class FloorViewModel extends StateNotifier<FloorState> {
     try {
       _cancelTimer();
       state = state.copyWith(isLoading: true, error: "");
-      final res = await _service.getLift(state.value);
+      final tmp = _box.get("otp_verification_response") as Map;
+      final res = await _service.getLift(tmp['token'], state.value);
       logger.d("Response: $res");
       state = state.copyWith(isLoading: false, elapse: 0);
       elapsing();

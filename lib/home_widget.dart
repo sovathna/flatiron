@@ -32,7 +32,9 @@ class HomeWidget extends ConsumerWidget {
                     },
                     selected: _floors[index] == ref.watch(_homeViewModel),
                     label: Text(
-                      _floors[index],
+                      _floors[index] == "00"
+                          ? "G"
+                          : "${int.parse(_floors[index])}",
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),

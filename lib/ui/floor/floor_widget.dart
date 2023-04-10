@@ -8,7 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final _floorViewModel = StateNotifierProvider.autoDispose
     .family<FloorViewModel, FloorState, String>(
-  (ref, args) => FloorViewModel(args, ref.watch(appServiceProvider)),
+  (ref, args) => FloorViewModel(
+    args,
+    ref.watch(appServiceProvider),
+    ref.watch(appBoxProvider),
+  ),
 );
 
 class FloorWidget extends ConsumerWidget {
@@ -29,20 +33,33 @@ class FloorWidget extends ConsumerWidget {
     _getFloor(ref);
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          Text(
-            "Floor $_floor",
-            style: Theme.of(context).textTheme.titleLarge,
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _floor == "00" ? "G" : "${int.parse(_floor)}",
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                _QrImageWidget(_floor),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(), //<-- SEE HERE
+                    ),
+                    onPressed:
+                        ref.read(_floorViewModel(_floor).notifier).getFloor,
+                    child: const Icon(Icons.refresh),
+                  ),
+                ),
+                _FooterWidget(_floor),
+                _ErrorWidget(_floor),
+              ],
+            ),
           ),
-          _QrImageWidget(_floor),
-          _ErrorWidget(_floor),
-          _FooterWidget(_floor),
-          ElevatedButton(
-            onPressed: ref.read(_floorViewModel(_floor).notifier).getFloor,
-            child: const Text("Refresh"),
-          )
         ],
       ),
     );

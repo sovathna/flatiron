@@ -7,8 +7,9 @@ import 'package:flatiron/ui/signin/signin_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final _signinViewModel = StateNotifierProvider<SigninViewModel, SigninState>(
-    (ref) => SigninViewModel(ref.watch(appServiceProvider)));
+final _signinViewModel =
+    StateNotifierProvider.autoDispose<SigninViewModel, SigninState>(
+        (ref) => SigninViewModel(ref.watch(appServiceProvider)));
 
 class SigninWidget extends ConsumerWidget {
   const SigninWidget({super.key});

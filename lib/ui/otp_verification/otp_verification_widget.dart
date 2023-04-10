@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinput/pinput.dart';
 
-final _viewModel =
-    StateNotifierProvider<OtpVerificationViewModel, OtpVerificationState>(
+final _viewModel = StateNotifierProvider.autoDispose<OtpVerificationViewModel,
+    OtpVerificationState>(
   (ref) => OtpVerificationViewModel(
     ref.watch(appServiceProvider),
     ref.watch(appBoxProvider),
