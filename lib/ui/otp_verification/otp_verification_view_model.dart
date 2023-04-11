@@ -1,23 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:async/async.dart';
 import 'package:flatiron/const.dart';
+import 'package:flatiron/data/app_preferences.dart';
 import 'package:flatiron/data/app_service.dart';
 import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_state.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/adapters.dart';
 
 class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
-  OtpVerificationViewModel(this._service, this._box)
+  OtpVerificationViewModel(this._service, this._pref)
       : super(const OtpVerificationState()) {
     startTimer();
   }
 
   final AppService _service;
-  final Box _box;
+  final AppPreferences _pref;
 
   final FocusNode focusNode = FocusNode();
 
@@ -32,12 +31,11 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
   void verifyOtp() async {
     try {
       state = state.copyWith(isLoading: true, error: "");
+      await Future.delayed(const Duration(seconds: 1));
       final res = await _service.verifyOTP(state.phone, state.otp);
       if (!mounted) return;
-      logger.d("${res.statusCode}");
       if (res.statusCode == 200) {
-        final maps = jsonDecode(res.body) as Map;
-        await _box.put("otp_verification_response", maps);
+        await _pref.putData(res.body);
         if (!mounted) return;
         state = state.copyWith(isSuccess: true);
       } else if (res.statusCode == 403) {
@@ -45,7 +43,7 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
         if ((data['status'] as int) == 412) {
           state = state.copyWith(
             isLoading: false,
-            error: "Incorrect OTP!",
+            error: "OTP Incorrect!",
           );
         } else {
           state = state.copyWith(
@@ -69,12 +67,26 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
   }
 
   void getOtp() async {
-    state = state.copyWith(isOtp: true, error: "");
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    state = state.copyWith(timer: kOtpTimer, isOtp: false);
-    startTimer();
+    try {
+      state = state.copyWith(isOtp: true);
+      final res = await _service.signin(state.phone);
+      if (!mounted) return;
+      if (res.statusCode == 200 && res.body == "OK") {
+        state = state.copyWith(timer: kOtpTimer, isOtp: false);
+        startTimer();
+      } else {
+        state = state.copyWith(
+          isOtp: false,
+          error: "An error has occurred! [${res.statusCode}]",
+        );
+      }
+    } on Exception catch (e) {
+      logger.e(e);
+      state = state.copyWith(
+        isOtp: false,
+        error: "An error has occurred!",
+      );
+    }
   }
 
   Timer? otpTimer;

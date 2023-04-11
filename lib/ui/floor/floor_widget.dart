@@ -6,12 +6,12 @@ import 'package:flatiron/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final _floorViewModel = StateNotifierProvider.autoDispose
+final _viewModel = StateNotifierProvider.autoDispose
     .family<FloorViewModel, FloorState, String>(
   (ref, args) => FloorViewModel(
     args,
     ref.watch(appServiceProvider),
-    ref.watch(appBoxProvider),
+    ref.watch(appPreferencesProvider),
   ),
 );
 
@@ -22,8 +22,8 @@ class FloorWidget extends ConsumerWidget {
 
   void _getFloor(WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (!ref.read(_floorViewModel(_floor)).isInit) return;
-      ref.read(_floorViewModel(_floor).notifier).getFloor();
+      if (!ref.read(_viewModel(_floor)).isInit) return;
+      ref.read(_viewModel(_floor).notifier).getFloor();
     });
   }
 
@@ -44,23 +44,36 @@ class FloorWidget extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 _QrImageWidget(_floor),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(), //<-- SEE HERE
-                    ),
-                    onPressed:
-                        ref.read(_floorViewModel(_floor).notifier).getFloor,
-                    child: const Icon(Icons.refresh),
-                  ),
-                ),
+                _RetryWidget(_floor),
                 _FooterWidget(_floor),
                 _ErrorWidget(_floor),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RetryWidget extends ConsumerWidget {
+  const _RetryWidget(this._floor);
+  final String _floor;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading =
+        ref.watch(_viewModel(_floor).select((value) => value.isLoading));
+    final isValue =
+        ref.watch(_viewModel(_floor).select((value) => value.value)).isNotEmpty;
+    if (isLoading && !isValue) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(shape: const CircleBorder()),
+        onPressed:
+            isLoading ? null : ref.read(_viewModel(_floor).notifier).getFloor,
+        child: const Icon(Icons.refresh),
       ),
     );
   }
@@ -73,14 +86,12 @@ class _ErrorWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final error =
-        ref.watch(_floorViewModel(_floor).select((value) => value.error));
+    final error = ref.watch(_viewModel(_floor).select((value) => value.error));
 
     if (error.isEmpty) {
       return const SizedBox.shrink();
     }
-    final value =
-        ref.watch(_floorViewModel(_floor).select((value) => value.value));
+    final value = ref.watch(_viewModel(_floor).select((value) => value.value));
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Column(
@@ -96,8 +107,7 @@ class _ErrorWidget extends ConsumerWidget {
           ),
           value.isEmpty
               ? ElevatedButton(
-                  onPressed:
-                      ref.read(_floorViewModel(_floor).notifier).getFloor,
+                  onPressed: ref.read(_viewModel(_floor).notifier).getFloor,
                   child: const Text("Retry"),
                 )
               : const SizedBox.shrink()
@@ -113,7 +123,7 @@ class _FooterWidget extends ConsumerWidget {
   final String _floor;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(_floorViewModel(_floor));
+    final state = ref.watch(_viewModel(_floor));
     return state.value.isNotEmpty
         ? Padding(
             padding:
@@ -130,9 +140,16 @@ class _FooterWidget extends ConsumerWidget {
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed:
-                          ref.read(_floorViewModel(_floor).notifier).refresh,
-                      child: const Text("Refresh session"),
+                      onPressed: ref.read(_viewModel(_floor).notifier).refresh,
+                      child: state.isLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text("Refresh session"),
                     ),
                   ),
                 ),
@@ -150,14 +167,15 @@ class _QrImageWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final value =
-        ref.watch(_floorViewModel(_floor).select((value) => value.value));
+    final value = ref.watch(_viewModel(_floor).select((value) => value.value));
     final color =
-        Theme.of(context).brightness == Brightness.light ? "1C1B1F" : "E6E1E5";
+        Theme.of(context).brightness == Brightness.light ? "1C1B1F" : "1A1C19";
+    final backColor =
+        Theme.of(context).brightness == Brightness.light ? "FCFDF7" : "1A1C19";
     final child = value.isNotEmpty
         ? CachedNetworkImage(
             imageUrl:
-                "https://qrcode.tec-it.com/API/QRCode?color=$color&istransparent=True&data=$value",
+                "https://qrcode.tec-it.com/API/QRCode?backcolor=$backColor&color=$color&data=$value",
             fit: BoxFit.cover,
           )
         : const Center(child: CircularProgressIndicator());
@@ -179,7 +197,7 @@ class _ElapseWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final elapse =
-        ref.watch(_floorViewModel(_floor).select((value) => value.elapse));
+        ref.watch(_viewModel(_floor).select((value) => value.elapse));
     return Text(
       "Session elapsed ${elapse}s",
       style: Theme.of(context).textTheme.bodySmall,

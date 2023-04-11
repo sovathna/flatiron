@@ -1,6 +1,5 @@
-import 'package:flatiron/const.dart';
 import 'package:flatiron/data/data_module.dart';
-import 'package:flatiron/main.dart';
+import 'package:flatiron/ui/home/home_widget.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_state.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_view_model.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +10,7 @@ final _viewModel = StateNotifierProvider.autoDispose<OtpVerificationViewModel,
     OtpVerificationState>(
   (ref) => OtpVerificationViewModel(
     ref.watch(appServiceProvider),
-    ref.watch(appBoxProvider),
+    ref.watch(appPreferencesProvider),
   ),
 );
 
@@ -25,6 +24,18 @@ class OtpVerificationWidget extends ConsumerWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(_viewModel.notifier).setPhone(phone);
     });
+
+    ref.listen(
+      _viewModel.select((value) => value.isSuccess),
+      (prev, next) {
+        if (prev != next && next) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomeWidget()),
+            (route) => false,
+          );
+        }
+      },
+    );
     return Scaffold(
       appBar: AppBar(title: const Text("OTP Verification")),
       body: const _OtpWidget(),

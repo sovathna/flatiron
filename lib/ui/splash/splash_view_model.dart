@@ -1,19 +1,15 @@
+import 'package:flatiron/data/app_preferences.dart';
 import 'package:flatiron/ui/splash/splash_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/adapters.dart';
 
 class SplashViewModel extends StateNotifier<SplashState> {
-  SplashViewModel(this._box) : super(const SplashState()) {
-    _init();
-  }
+  SplashViewModel(this._pref) : super(const SplashState());
 
-  final Box _box;
+  final AppPreferences _pref;
 
-  void _init() async {
+  void init() {
     state = state.copyWith(isInit: false, isLoading: true);
-    await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
-    final isSuccess = _box.containsKey("otp_verification_response");
-    state = state.copyWith(isLoading: false, isSuccess: isSuccess);
+    state = state.copyWith(isLoading: false, isSuccess: _pref.hasData());
   }
 }

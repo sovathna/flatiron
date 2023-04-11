@@ -1,8 +1,13 @@
-const int kOtpTimer = 5;
+const int kOtpTimer = 60;
 const String appBox = "app_settings";
 
 class Const {
   static String baseUrl = "https://www.flatironbymeridian.top/api/";
+
+  static String myCardNumber = "1110000661";
+
+  static String clientId =
+      "A857D7C7F5DC0B2BC69F2AC40F58C0D2985405646BA32B3F1C66C7CA7ADD335A";
 
   static String me = "account/me";
   static String getFloor =

@@ -1,17 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:flatiron/data/app_preferences.dart';
 import 'package:flatiron/data/app_service.dart';
+import 'package:flatiron/model/floor.dart';
 import 'package:flatiron/ui/floor/floor_state.dart';
 import 'package:flatiron/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/adapters.dart';
 
 class FloorViewModel extends StateNotifier<FloorState> {
-  FloorViewModel(this._floor, this._service, this._box)
+  FloorViewModel(this._floor, this._service, this._pref)
       : super(const FloorState());
 
   final String _floor;
-  final Box _box;
+  final AppPreferences _pref;
 
   final AppService _service;
   Timer? _timer;
@@ -21,25 +23,32 @@ class FloorViewModel extends StateNotifier<FloorState> {
     try {
       _cancelTimer();
       state = const FloorState(isInit: false, isLoading: true);
-      final tmp = _box.get("otp_verification_response") as Map;
-
       final res = await _service.getFloor(
-        tmp['data']['hikvisionCardNo'],
-        tmp['token'],
+        _pref.getCardNumber(),
+        _pref.getToken(),
         _floor,
       );
-      logger.d("Response: ${res.toJson()}");
-      state = state.copyWith(
-        isLoading: false,
-        value: res.value,
-        elapse: 0,
-      );
-      elapsing();
+      if (!mounted) return;
+      if (res.statusCode == 200) {
+        final tmp = FloorResponse.fromJson(
+            jsonDecode(res.body) as Map<String, dynamic>);
+        state = state.copyWith(
+          isLoading: false,
+          value: tmp.value,
+          elapse: 0,
+        );
+        elapsing();
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: "An error has occurred! [${res.statusCode}]",
+        );
+      }
     } on Exception catch (e) {
       logger.e(e);
       state = state.copyWith(
         isLoading: false,
-        error: "An error has occurred",
+        error: "An error has occurred!",
       );
     }
   }
@@ -49,16 +58,23 @@ class FloorViewModel extends StateNotifier<FloorState> {
     try {
       _cancelTimer();
       state = state.copyWith(isLoading: true, error: "");
-      final tmp = _box.get("otp_verification_response") as Map;
-      final res = await _service.getLift(tmp['token'], state.value);
-      logger.d("Response: $res");
-      state = state.copyWith(isLoading: false, elapse: 0);
-      elapsing();
+      final res =
+          await _service.refreshFloorSession(_pref.getToken(), state.value);
+      if (!mounted) return;
+      if (res.statusCode == 200) {
+        state = state.copyWith(isLoading: false, elapse: 0);
+        elapsing();
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: "An error has occurred! [${res.statusCode}]",
+        );
+      }
     } on Exception catch (e) {
       logger.e(e);
       state = state.copyWith(
         isLoading: false,
-        error: "An error has occurred",
+        error: "An error has occurred!",
       );
     }
   }
@@ -68,6 +84,7 @@ class FloorViewModel extends StateNotifier<FloorState> {
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
+        if (!mounted) _cancelTimer();
         state = state.copyWith(elapse: state.elapse + 1);
       },
     );

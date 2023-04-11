@@ -1,6 +1,5 @@
 import 'package:flatiron/const.dart';
 import 'package:flatiron/data/data_module.dart';
-import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_widget.dart';
 import 'package:flatiron/ui/signin/signin_state.dart';
 import 'package:flatiron/ui/signin/signin_view_model.dart';
@@ -45,19 +44,21 @@ class _PhoneEntryWidget extends ConsumerWidget {
       ref.read(_signinViewModel.notifier).phoneInputFocusNode.requestFocus();
     });
 
-    ref.listen(_signinViewModel.select((value) => value.isSuccess),
-        (oldValue, newValue) {
-      if (newValue) {
-        Navigator.of(context)
-            .push(
-              MaterialPageRoute(
-                builder: (context) =>
-                    OtpVerificationWidget(ref.read(_signinViewModel).phone),
-              ),
-            )
-            .then((value) => ref.read(_signinViewModel.notifier).reset());
-      }
-    });
+    ref.listen(
+      _signinViewModel.select((value) => value.isSuccess),
+      (prev, next) {
+        if (prev != next && next) {
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      OtpVerificationWidget(ref.read(_signinViewModel).phone),
+                ),
+              )
+              .then((value) => ref.read(_signinViewModel.notifier).reset());
+        }
+      },
+    );
     return Column(
       children: [
         Expanded(

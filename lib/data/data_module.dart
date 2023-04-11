@@ -1,4 +1,5 @@
 import 'package:flatiron/const.dart';
+import 'package:flatiron/data/app_preferences.dart';
 import 'package:flatiron/data/app_service.dart';
 import 'package:flatiron/data/app_service_impl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,3 +15,6 @@ final appServiceProvider = Provider<AppService>(
 );
 
 final appBoxProvider = Provider<Box>((ref) => Hive.box(appBox));
+
+final appPreferencesProvider =
+    Provider((ref) => AppPreferences(ref.watch(appBoxProvider)));
