@@ -7,10 +7,13 @@ class HomeViewModel extends StateNotifier<HomeState> {
 
   final AppPreferences _pref;
 
-  void init() {
+  void init() async {
+    state = state.copyWith(isInit: false);
+    await _pref.initFloors();
+    if (!mounted) return;
     state = state.copyWith(
       isInit: false,
-      floors: _pref.getFloors(),
+      floors: _pref.getHomeFloors(),
       name: _pref.getFirstName(),
       mainFloor: _pref.getMainFloor(),
     );
@@ -18,5 +21,9 @@ class HomeViewModel extends StateNotifier<HomeState> {
 
   void setMainFloor(String floor) {
     state = state.copyWith(mainFloor: floor);
+  }
+
+  void refreshFloors() {
+    state = state.copyWith(floors: _pref.getHomeFloors());
   }
 }

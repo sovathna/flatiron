@@ -5,6 +5,7 @@ import 'package:flatiron/ui/floor/floor_view_model.dart';
 import 'package:flatiron/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 final _viewModel = StateNotifierProvider.autoDispose
     .family<FloorViewModel, FloorState, String>(
@@ -16,9 +17,10 @@ final _viewModel = StateNotifierProvider.autoDispose
 );
 
 class FloorWidget extends ConsumerWidget {
-  final String _floor;
+  FloorWidget(this._floor, {super.key});
 
-  const FloorWidget(this._floor, {super.key});
+  final String _floor;
+  final _refreshController = RefreshController();
 
   void _getFloor(WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -31,26 +33,38 @@ class FloorWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     logger.d("build");
     _getFloor(ref);
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _floor == "00" ? "G" : "${int.parse(_floor)}",
-                  style: Theme.of(context).textTheme.titleLarge,
+    ref.listen(_viewModel(_floor), (prev, next) {
+      if (!next.isLoading) {
+        _refreshController.refreshCompleted();
+      }
+    });
+    return SmartRefresher(
+      controller: _refreshController,
+      onRefresh: () => ref.read(_viewModel(_floor).notifier).getFloor(),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _floor == "00"
+                          ? "Ground Level"
+                          : "Level ${int.parse(_floor)}",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    _QrImageWidget(_floor),
+                    _FooterWidget(_floor),
+                    _ErrorWidget(_floor),
+                  ],
                 ),
-                _QrImageWidget(_floor),
-                _RetryWidget(_floor),
-                _FooterWidget(_floor),
-                _ErrorWidget(_floor),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -174,6 +188,10 @@ class _QrImageWidget extends ConsumerWidget {
         Theme.of(context).brightness == Brightness.light ? "FCFDF7" : "1A1C19";
     final child = value.isNotEmpty
         ? CachedNetworkImage(
+            fadeInDuration: const Duration(milliseconds: 250),
+            fadeOutDuration: const Duration(milliseconds: 200),
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
             imageUrl:
                 "https://qrcode.tec-it.com/API/QRCode?backcolor=$backColor&color=$color&data=$value",
             fit: BoxFit.cover,

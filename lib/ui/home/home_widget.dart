@@ -25,11 +25,16 @@ class HomeWidget extends ConsumerWidget {
         title: const Text("Flatiron"),
         actions: [_ProfileIconWidget()],
       ),
-      body: Column(
+      body: Row(
         children: [
-          _FloorWidget(),
-          const Spacer(),
-          _FloorsChoiceWidget(),
+          Expanded(
+            child: Column(
+              children: [
+                Expanded(child: _FloorWidget()),
+                _FloorsChoiceWidget(),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -42,30 +47,38 @@ class _FloorsChoiceWidget extends ConsumerWidget {
     final floors = ref.watch(_viewModel.select((value) => value.floors));
     if (floors.isEmpty) return const SizedBox.shrink();
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => FloorsWidget()));
-            },
-            icon: const Icon(Icons.edit),
-            iconSize: 16.0,
-            tooltip: "Edit floors",
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: IconButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => const FloorsWidget(),
+                      ),
+                    )
+                    .then((value) =>
+                        ref.read(_viewModel.notifier).refreshFloors());
+              },
+              icon: const Icon(Icons.edit),
+              iconSize: 18.0,
+              tooltip: "Edit",
+            ),
           ),
         ),
         SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           scrollDirection: Axis.horizontal,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               floors.length,
               (index) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: ChoiceChip(
                   onSelected: (selected) {
                     ref.read(_viewModel.notifier).setMainFloor(floors[index]);
@@ -114,9 +127,7 @@ class _ProfileIconWidget extends ConsumerWidget {
           children: [
             Text(
               name.toUpperCase(),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(width: 4),
             Icon(

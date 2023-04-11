@@ -44,10 +44,10 @@ android {
 
     signingConfigs {
         debug {
-            keyAlias "debug"
-            keyPassword "android"
             storeFile rootProject.file("debug.jks")
             storePassword "android"
+            keyAlias "debug"
+            keyPassword "android"
         }
     }
 

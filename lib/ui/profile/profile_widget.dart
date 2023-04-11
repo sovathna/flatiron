@@ -64,7 +64,7 @@ class ProfileWidget extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 4.0),
                                 Text(
-                                  state.phone!.toUpperCase(),
+                                  state.phone!,
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                               ],

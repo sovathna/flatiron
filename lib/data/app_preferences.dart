@@ -45,7 +45,31 @@ class AppPreferences {
     return tmp.split(",");
   }
 
-  void clear() {
-    _box.clear();
+  Future<void> clear() async {
+    await _box.clear();
+  }
+
+  Future<void> initFloors() async {
+    if (_box.containsKey("enabled_floors")) return;
+    final floors = getFloors();
+    return await _box.put("enabled_floors", floors);
+  }
+
+  List<String> getHomeFloors() {
+    final tmp = _box.get("enabled_floors") as List<String>;
+    if (tmp.isEmpty) {
+      return [getMainFloor()];
+    } else if (!tmp.contains(getMainFloor())) {
+      return [getMainFloor(), ...tmp];
+    }
+    return tmp;
+  }
+
+  List<String> getEnabledFloors() {
+    return _box.get("enabled_floors");
+  }
+
+  Future<void> saveEnabledFloors(List<String> floors) async {
+    return await _box.put("enabled_floors", floors);
   }
 }

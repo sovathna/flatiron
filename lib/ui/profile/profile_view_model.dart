@@ -10,8 +10,14 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
     state = state.copyWith(
       isInit: false,
       name: _pref.getName(),
-      phone: _pref.getPhone(),
+      phone: _mask(_pref.getPhone()),
     );
+  }
+
+  String _mask(String phone) {
+    final start = phone.substring(0, 3);
+    final end = phone.substring(phone.length - 2);
+    return phone.length == 9 ? "$start****$end" : "$start*****$end";
   }
 
   void logout() {
