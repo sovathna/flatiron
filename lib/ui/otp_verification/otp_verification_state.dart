@@ -61,4 +61,12 @@ class OtpVerificationState {
   bool get isPinEnabled {
     return !isOtp && !isLoading;
   }
+
+  String get maskPhone => _mask(phone);
+
+  String _mask(String phone) {
+    final start = phone.substring(0, 3);
+    final end = phone.substring(phone.length - 2);
+    return phone.length == 9 ? "$start****$end" : "$start*****$end";
+  }
 }

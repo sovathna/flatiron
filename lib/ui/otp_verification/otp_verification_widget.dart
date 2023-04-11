@@ -48,7 +48,7 @@ class _TitleWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Text(
-      "OTP has been sent to number\n${ref.watch(_viewModel.select((value) => value.phone))}",
+      "OTP has been sent to number\n${ref.watch(_viewModel.select((value) => value.maskPhone))}",
       textAlign: TextAlign.center,
       style: Theme.of(context).textTheme.titleMedium,
     );

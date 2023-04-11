@@ -21,13 +21,7 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
   final FocusNode focusNode = FocusNode();
 
   void setPhone(String phone) {
-    state = state.copyWith(phone: _mask(phone));
-  }
-
-  String _mask(String phone) {
-    final start = phone.substring(0, 3);
-    final end = phone.substring(phone.length - 2);
-    return phone.length == 9 ? "$start****$end" : "$start*****$end";
+    state = state.copyWith(phone: phone);
   }
 
   void setOtp(String otp) {
