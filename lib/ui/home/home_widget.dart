@@ -6,18 +6,28 @@ import 'package:flatiron/ui/home/home_view_model.dart';
 import 'package:flatiron/ui/profile/profile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 final _viewModel = StateNotifierProvider<HomeViewModel, HomeState>(
     (ref) => HomeViewModel(ref.watch(appPreferencesProvider)));
+
+final _key1 = GlobalKey();
+final _key2 = GlobalKey();
 
 class HomeWidget extends ConsumerWidget {
   const HomeWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final args = ModalRoute.of(context)!.settings.arguments as Map?;
+    final shouldShowcase = (args?['shouldShowcase'] as bool?) == true;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (ref.read(_viewModel.select((value) => value.isInit))) {
         ref.read(_viewModel.notifier).init();
+      }
+
+      if (shouldShowcase) {
+        ShowCaseWidget.of(context).startShowCase([_key1, _key2]);
       }
     });
     return Scaffold(
@@ -30,7 +40,15 @@ class HomeWidget extends ConsumerWidget {
           Expanded(
             child: Column(
               children: [
-                Expanded(child: _FloorWidget()),
+                Expanded(
+                  child: shouldShowcase
+                      ? Showcase(
+                          key: _key1,
+                          description: "Swipe down to refresh the QR code.",
+                          child: _FloorWidget(),
+                        )
+                      : _FloorWidget(),
+                ),
                 _FloorsChoiceWidget(),
               ],
             ),
@@ -44,6 +62,8 @@ class HomeWidget extends ConsumerWidget {
 class _FloorsChoiceWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final args = ModalRoute.of(context)!.settings.arguments as Map?;
+    final shouldShowcase = (args?['shouldShowcase'] as bool?) == true;
     final floors = ref.watch(_viewModel.select((value) => value.floors));
     if (floors.isEmpty) return const SizedBox.shrink();
     return Column(
@@ -53,21 +73,41 @@ class _FloorsChoiceWidget extends ConsumerWidget {
           alignment: Alignment.centerRight,
           child: Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              onPressed: () {
-                Navigator.of(context)
-                    .push(
-                      MaterialPageRoute(
-                        builder: (context) => const FloorsWidget(),
-                      ),
-                    )
-                    .then((value) =>
-                        ref.read(_viewModel.notifier).refreshFloors());
-              },
-              icon: const Icon(Icons.edit),
-              iconSize: 18.0,
-              tooltip: "Edit",
-            ),
+            child: shouldShowcase
+                ? Showcase(
+                    key: _key2,
+                    description: "Select which floors to show on the Homepage.",
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                builder: (context) => const FloorsWidget(),
+                              ),
+                            )
+                            .then((value) =>
+                                ref.read(_viewModel.notifier).refreshFloors());
+                      },
+                      icon: const Icon(Icons.edit),
+                      iconSize: 18.0,
+                      tooltip: "Edit",
+                    ),
+                  )
+                : IconButton(
+                    onPressed: () {
+                      Navigator.of(context)
+                          .push(
+                            MaterialPageRoute(
+                              builder: (context) => const FloorsWidget(),
+                            ),
+                          )
+                          .then((value) =>
+                              ref.read(_viewModel.notifier).refreshFloors());
+                    },
+                    icon: const Icon(Icons.edit),
+                    iconSize: 18.0,
+                    tooltip: "Edit",
+                  ),
           ),
         ),
         SingleChildScrollView(

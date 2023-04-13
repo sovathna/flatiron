@@ -21,37 +21,67 @@ class FloorsWidget extends ConsumerWidget {
 
     final state = ref.watch(_viewModel);
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit floors")),
-      body: SingleChildScrollView(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Wrap(
-              children: List.generate(
-                state.floors.length,
-                (index) => Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: ChoiceChip(
-                    label: Text(
-                      state.floors[index] == "00"
-                          ? "G"
-                          : "${int.parse(state.floors[index])}",
-                      style: Theme.of(context).textTheme.titleMedium,
+      appBar: AppBar(
+        title: const Text("Edit floors"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: IconButton(
+              onPressed: () {
+                ref.read(_viewModel.notifier).selectAllOrDeselectAll();
+              },
+              icon: Icon(
+                state.hasSelection
+                    ? Icons.deselect_rounded
+                    : Icons.select_all_rounded,
+              ),
+              tooltip: state.hasSelection ? "Deselect all" : "Select all",
+            ),
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 16.0, right: 32.0, top: 16.0),
+            child: Text(
+              "Select which floors to show on the Homepage. They will be shown by the order of your selection.",
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Wrap(
+                    children: List.generate(
+                      state.floors.length,
+                      (index) => Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: ChoiceChip(
+                          label: Text(
+                            state.floors[index] == "00"
+                                ? "G"
+                                : "${int.parse(state.floors[index])}",
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          selected:
+                              state.enableds.contains(state.floors[index]),
+                          onSelected: (selected) {
+                            logger.d("$selected");
+                            ref.read(_viewModel.notifier).selectOrDeselect(
+                                selected, state.floors[index]);
+                          },
+                        ),
+                      ),
                     ),
-                    selected: state.enableds.contains(state.floors[index]),
-                    onSelected: (selected) {
-                      logger.d("$selected");
-                      ref
-                          .read(_viewModel.notifier)
-                          .selectOrDeselect(selected, state.floors[index]);
-                    },
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

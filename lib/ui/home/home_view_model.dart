@@ -24,6 +24,14 @@ class HomeViewModel extends StateNotifier<HomeState> {
   }
 
   void refreshFloors() {
-    state = state.copyWith(floors: _pref.getHomeFloors());
+    final floors = _pref.getHomeFloors();
+    if (!floors.contains(state.mainFloor)) {
+      state = state.copyWith(
+        floors: floors,
+        mainFloor: _pref.getMainFloor(),
+      );
+    } else {
+      state = state.copyWith(floors: floors);
+    }
   }
 }

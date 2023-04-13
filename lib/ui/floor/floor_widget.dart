@@ -50,31 +50,34 @@ class FloorWidget extends ConsumerWidget {
       }
     });
 
-    return SmartRefresher(
-      controller: ref.watch(_refreshController),
-      onRefresh: () => ref.read(_viewModel(_floor).notifier).getFloor(),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _floor == "00"
-                          ? "Ground Level"
-                          : "Level ${int.parse(_floor)}",
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    _QrImageWidget(_floor),
-                    _FooterWidget(_floor),
-                    _ErrorWidget(_floor),
-                  ],
+    return RefreshConfiguration(
+      headerTriggerDistance: 42,
+      child: SmartRefresher(
+        controller: ref.watch(_refreshController),
+        onRefresh: () => ref.read(_viewModel(_floor).notifier).getFloor(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _floor == "00"
+                            ? "Ground Level"
+                            : "Level ${int.parse(_floor)}",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      _QrImageWidget(_floor),
+                      _FooterWidget(_floor),
+                      _ErrorWidget(_floor),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

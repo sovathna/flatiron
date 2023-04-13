@@ -40,6 +40,8 @@ class AppPreferences {
     return _data['hikvisionMainFloor'] as String;
   }
 
+  String getCompany() => _data['hikvisionCompany'];
+
   List<String> getFloors() {
     final tmp = _data['hikvisionSecondaryFloors'];
     return tmp.split(",");
@@ -71,5 +73,11 @@ class AppPreferences {
 
   Future<void> saveEnabledFloors(List<String> floors) async {
     return await _box.put("enabled_floors", floors);
+  }
+
+  bool isDarkmode() => _box.get("is_dark_mode", defaultValue: false);
+
+  Future<void> changeThemeMode() async {
+    return await _box.put("is_dark_mode", !isDarkmode());
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flatiron/const.dart';
+import 'package:flatiron/data/data_module.dart';
 import 'package:flatiron/ui/splash/splash_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +12,14 @@ import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'color_schemes.g.dart';
 
-var logger = Logger(
+final logger = Logger(
   printer: PrettyPrinter(),
 );
+
+final isDarkModeProvider = StateProvider<bool>((ref) {
+  final pref = ref.watch(appPreferencesProvider);
+  return pref.isDarkmode();
+});
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,11 +32,11 @@ void main() async {
   runApp(const ProviderScope(child: MainApp()));
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       theme: ThemeData(
         useMaterial3: true,
@@ -42,7 +48,8 @@ class MainApp extends StatelessWidget {
         colorScheme: darkColorScheme,
         fontFamily: "Product Sans",
       ),
-      themeMode: ThemeMode.light,
+      themeMode:
+          ref.watch(isDarkModeProvider) ? ThemeMode.dark : ThemeMode.light,
       home: const SplashWidget(),
     );
   }

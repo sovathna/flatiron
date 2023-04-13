@@ -1,4 +1,5 @@
 import 'package:flatiron/data/data_module.dart';
+import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/profile/profile_state.dart';
 import 'package:flatiron/ui/profile/profile_view_model.dart';
 import 'package:flatiron/ui/splash/splash_widget.dart';
@@ -58,15 +59,67 @@ class ProfileWidget extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                Text(
-                                  state.name!.toUpperCase(),
-                                  style: Theme.of(context).textTheme.titleLarge,
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: Text(
+                                    state.name!.toUpperCase(),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
                                 ),
-                                const SizedBox(height: 4.0),
-                                Text(
-                                  state.phone!,
-                                  style: Theme.of(context).textTheme.titleLarge,
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: Text(
+                                    state.phone!,
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
                                 ),
+                                const SizedBox(height: 16),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0, horizontal: 16.0),
+                                  child: Row(
+                                    children: [
+                                      const Expanded(child: Text("Company")),
+                                      Expanded(child: Text(state.company!))
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0, horizontal: 16.0),
+                                  child: Row(
+                                    children: [
+                                      const Expanded(child: Text("Main floor")),
+                                      Expanded(child: Text(state.mainFloor!))
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 16.0),
+                                  child: Row(
+                                    children: [
+                                      const Expanded(child: Text("Dark mode")),
+                                      Switch(
+                                        value: ref.watch(isDarkModeProvider),
+                                        onChanged: (selected) {
+                                          logger.d("clicked");
+                                          ref
+                                              .read(_viewModel.notifier)
+                                              .changeThemeMode();
+                                          ref
+                                              .read(isDarkModeProvider.notifier)
+                                              .state = selected;
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                )
                               ],
                             ),
                           ),
@@ -112,7 +165,7 @@ class ProfileWidget extends ConsumerWidget {
                                             Navigator.of(context).pop();
                                           },
                                           child: Text(
-                                            "Cancel",
+                                            "No",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium,

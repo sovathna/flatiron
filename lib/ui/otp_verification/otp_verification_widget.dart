@@ -6,6 +6,7 @@ import 'package:flatiron/ui/otp_verification/otp_verification_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinput/pinput.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 final _viewModel = StateNotifierProvider.autoDispose<OtpVerificationViewModel,
     OtpVerificationState>(
@@ -39,7 +40,16 @@ class OtpVerificationWidget extends ConsumerWidget {
       (prev, next) {
         if (prev != next && next) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomeWidget()),
+            MaterialPageRoute(
+              builder: (context) => ShowCaseWidget(
+                blurValue: 0.3,
+                builder: Builder(builder: (context) {
+                  return const HomeWidget();
+                }),
+              ),
+              settings:
+                  const RouteSettings(arguments: {"shouldShowcase": true}),
+            ),
             (route) => false,
           );
         }

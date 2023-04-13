@@ -33,4 +33,26 @@ class FloorsViewModel extends StateNotifier<FloorsState> {
     if (!mounted) return;
     state = state.copyWith(enableds: newFloors);
   }
+
+  void selectAllOrDeselectAll() {
+    if (state.hasSelection) {
+      _deselectAll();
+    } else {
+      _selectAll();
+    }
+  }
+
+  void _selectAll() async {
+    final newFloors = state.floors.toList();
+    await _pref.saveEnabledFloors(newFloors);
+    if (!mounted) return;
+    state = state.copyWith(enableds: newFloors);
+  }
+
+  void _deselectAll() async {
+    final newFloors = List<String>.empty();
+    await _pref.saveEnabledFloors(newFloors);
+    if (!mounted) return;
+    state = state.copyWith(enableds: newFloors);
+  }
 }

@@ -65,7 +65,7 @@ class OtpVerificationState {
   String get maskPhone => _mask(phone);
 
   String _mask(String phone) {
-    if (phone.isEmpty) return phone;
+    if (phone.isEmpty || phone.length < 9) return phone;
     final start = phone.substring(0, 3);
     final end = phone.substring(phone.length - 2);
     return phone.length == 9 ? "$start****$end" : "$start*****$end";

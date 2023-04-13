@@ -31,4 +31,6 @@ class FloorsState {
       isInit: isInit ?? this.isInit,
     );
   }
+
+  bool get hasSelection => enableds.isNotEmpty;
 }
