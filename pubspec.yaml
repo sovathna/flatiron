@@ -8,7 +8,6 @@ environment:
 
 dependencies:
   async: ^2.10.0
-  cached_network_image: ^3.2.3
   flutter:
     sdk: flutter
   flutter_displaymode: ^0.5.0
@@ -43,7 +42,7 @@ flutter:
           weight: 700
           style: italic
 
-  assets:
-    - assets/icons/cellcard.jpg
-    - assets/icons/smart.jpg
-    - assets/icons/metfone.png
+  # assets:
+  #   - assets/icons/cellcard.jpg
+  #   - assets/icons/smart.jpg
+  #   - assets/icons/metfone.png

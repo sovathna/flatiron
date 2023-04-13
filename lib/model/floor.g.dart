@@ -9,9 +9,11 @@ part of 'floor.dart';
 FloorResponse _$FloorResponseFromJson(Map<String, dynamic> json) =>
     FloorResponse(
       value: json['value'] as String,
+      imageData: json['imgPath'] as String,
     );
 
 Map<String, dynamic> _$FloorResponseToJson(FloorResponse instance) =>
     <String, dynamic>{
       'value': instance.value,
+      'imgPath': instance.imageData,
     };

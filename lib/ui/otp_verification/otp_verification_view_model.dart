@@ -6,7 +6,6 @@ import 'package:flatiron/data/app_preferences.dart';
 import 'package:flatiron/data/app_service.dart';
 import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_state.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
@@ -17,8 +16,6 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
 
   final AppService _service;
   final AppPreferences _pref;
-
-  final FocusNode focusNode = FocusNode();
 
   void setPhone(String phone) {
     state = state.copyWith(phone: phone);
@@ -68,7 +65,7 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
 
   void getOtp() async {
     try {
-      state = state.copyWith(isOtp: true);
+      state = state.copyWith(isOtp: true, error: "");
       final res = await _service.signin(state.phone);
       if (!mounted) return;
       if (res.statusCode == 200 && res.body == "OK") {
@@ -110,8 +107,6 @@ class OtpVerificationViewModel extends StateNotifier<OtpVerificationState> {
 
   @override
   void dispose() {
-    logger.d("dispose");
-    focusNode.dispose();
     _cancelOtpTimer();
     super.dispose();
   }

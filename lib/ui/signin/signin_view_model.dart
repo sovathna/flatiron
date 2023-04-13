@@ -1,7 +1,6 @@
 import 'package:flatiron/data/app_service.dart';
 import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/signin/signin_state.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SigninViewModel extends StateNotifier<SigninState> {
@@ -9,9 +8,6 @@ class SigninViewModel extends StateNotifier<SigninState> {
 
   final AppService _service;
 
-  final TextEditingController phoneInputController =
-      TextEditingController(text: "");
-  final phoneInputFocusNode = FocusNode();
   void signin() async {
     try {
       state = state.copyWith(isLoading: true);
@@ -44,7 +40,6 @@ class SigninViewModel extends StateNotifier<SigninState> {
   }
 
   void setPhone(String value) {
-    if (value.isEmpty) phoneInputController.clear();
     state = state.copyWith(phone: value, error: null);
   }
 
@@ -59,8 +54,6 @@ class SigninViewModel extends StateNotifier<SigninState> {
   @override
   void dispose() {
     logger.d("dispose");
-    phoneInputFocusNode.dispose();
-    phoneInputController.dispose();
     super.dispose();
   }
 }

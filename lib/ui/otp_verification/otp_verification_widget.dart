@@ -1,4 +1,5 @@
 import 'package:flatiron/data/data_module.dart';
+import 'package:flatiron/main.dart';
 import 'package:flatiron/ui/home/home_widget.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_state.dart';
 import 'package:flatiron/ui/otp_verification/otp_verification_view_model.dart';
@@ -13,6 +14,14 @@ final _viewModel = StateNotifierProvider.autoDispose<OtpVerificationViewModel,
     ref.watch(appPreferencesProvider),
   ),
 );
+
+final _focusNode = Provider.autoDispose<FocusNode>((ref) {
+  final focusNode = FocusNode();
+  ref.onDispose(() {
+    focusNode.dispose();
+  });
+  return focusNode;
+});
 
 class OtpVerificationWidget extends ConsumerWidget {
   const OtpVerificationWidget(this.phone, {super.key});
@@ -107,9 +116,7 @@ class _ResendWidget extends ConsumerWidget {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Text("Resend OTP"))),
         timer > 0
@@ -145,9 +152,7 @@ class _ConfirmButtonWidget extends ConsumerWidget {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text("Confirm"),
             ),
@@ -170,7 +175,7 @@ class _IconWidget extends StatelessWidget {
             aspectRatio: 1.0,
             child: FittedBox(
               child: Icon(
-                Icons.pin_rounded,
+                Icons.security_rounded,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
@@ -184,7 +189,7 @@ class _OtpInputWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      ref.read(_viewModel.notifier).focusNode.requestFocus();
+      ref.read(_focusNode).requestFocus();
     });
     final color = Theme.of(context).colorScheme.primary;
     final textStyle = Theme.of(context)
@@ -205,21 +210,21 @@ class _OtpInputWidget extends ConsumerWidget {
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
       border: Border.all(color: color, width: 2),
     );
-
+    final errorColor = Theme.of(context).colorScheme.error;
     final errorTheme = defaultPinTheme.copyWith(
-        decoration: decoration.copyWith(
-          border: Border.all(
-              color: Theme.of(context).colorScheme.error, width: 1.2),
-        ),
-        textStyle:
-            textStyle?.copyWith(color: Theme.of(context).colorScheme.error));
+      decoration: decoration.copyWith(
+        border: Border.all(color: errorColor, width: 1.2),
+      ),
+      textStyle: textStyle?.copyWith(color: errorColor),
+    );
 
+    final disabledColor = Theme.of(context).colorScheme.outline;
     final disabledTheme = defaultPinTheme.copyWith(
-        decoration: decoration.copyWith(
-          border: Border.all(color: color, width: 1.2),
-        ),
-        textStyle: textStyle?.copyWith(
-            color: Theme.of(context).colorScheme.secondary));
+      decoration: decoration.copyWith(
+        border: Border.all(color: disabledColor, width: 1.2),
+      ),
+      textStyle: textStyle?.copyWith(color: disabledColor),
+    );
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration?.copyWith(
@@ -231,18 +236,20 @@ class _OtpInputWidget extends ConsumerWidget {
       defaultPinTheme: defaultPinTheme,
       focusedPinTheme: focusedPinTheme,
       submittedPinTheme: submittedPinTheme,
+      disabledPinTheme: disabledTheme,
       errorTextStyle: Theme.of(context)
           .textTheme
           .bodySmall
           ?.copyWith(color: Theme.of(context).colorScheme.error),
       errorPinTheme: errorTheme,
       enabled: ref.watch(_viewModel.select((value) => value.isPinEnabled)),
-      focusNode: ref.read(_viewModel.notifier).focusNode,
+      focusNode: ref.watch(_focusNode),
       showCursor: false,
       forceErrorState:
           ref.watch(_viewModel.select((value) => value.error)).isNotEmpty,
       errorText: ref.watch(_viewModel.select((value) => value.error)),
       onChanged: (value) {
+        logger.d("pin changed: $value");
         ref.read(_viewModel.notifier).setOtp(value);
       },
       onCompleted: (value) {

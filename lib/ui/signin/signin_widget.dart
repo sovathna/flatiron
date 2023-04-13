@@ -10,6 +10,23 @@ final _signinViewModel =
     StateNotifierProvider.autoDispose<SigninViewModel, SigninState>(
         (ref) => SigninViewModel(ref.watch(appServiceProvider)));
 
+final _phoneInputController =
+    Provider.autoDispose<TextEditingController>((ref) {
+  final controller = TextEditingController(text: "");
+  ref.onDispose(() {
+    controller.dispose();
+  });
+  return controller;
+});
+
+final _phoneFocusNode = Provider.autoDispose<FocusNode>((ref) {
+  final focusNode = FocusNode();
+  ref.onDispose(() {
+    focusNode.dispose();
+  });
+  return focusNode;
+});
+
 class SigninWidget extends ConsumerWidget {
   const SigninWidget({super.key});
 
@@ -41,7 +58,7 @@ class _PhoneEntryWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      ref.read(_signinViewModel.notifier).phoneInputFocusNode.requestFocus();
+      ref.read(_phoneFocusNode).requestFocus();
     });
 
     ref.listen(
@@ -70,15 +87,12 @@ class _PhoneEntryWidget extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    focusNode:
-                        ref.read(_signinViewModel.notifier).phoneInputFocusNode,
+                    focusNode: ref.watch(_phoneFocusNode),
                     enabled: ref.watch(
                         _signinViewModel.select((value) => !value.isLoading)),
                     maxLength: ref.watch(
                         _signinViewModel.select((value) => value.maxLength)),
-                    controller: ref
-                        .read(_signinViewModel.notifier)
-                        .phoneInputController,
+                    controller: ref.watch(_phoneInputController),
                     textInputAction: TextInputAction.send,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
@@ -94,7 +108,12 @@ class _PhoneEntryWidget extends ConsumerWidget {
                       hintText: "Ex: 0123456789",
                       errorText: ref.watch(_signinViewModel).error,
                     ),
-                    onChanged: ref.read(_signinViewModel.notifier).setPhone,
+                    onChanged: (value) {
+                      if (value.isEmpty) {
+                        ref.read(_phoneInputController).clear();
+                      }
+                      ref.read(_signinViewModel.notifier).setPhone(value);
+                    },
                     onSubmitted: (value) => _onSubmitted(ref),
                   ),
                 ),
@@ -195,6 +214,7 @@ class _SuffixIconWidget extends ConsumerWidget {
           ? null
           : () {
               ref.read(_signinViewModel.notifier).setPhone("");
+              ref.read(_phoneInputController).clear();
             },
       icon: const Icon(Icons.clear_rounded),
     );

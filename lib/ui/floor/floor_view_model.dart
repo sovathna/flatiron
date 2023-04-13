@@ -14,7 +14,6 @@ class FloorViewModel extends StateNotifier<FloorState> {
 
   final String _floor;
   final AppPreferences _pref;
-
   final AppService _service;
   Timer? _timer;
 
@@ -30,11 +29,11 @@ class FloorViewModel extends StateNotifier<FloorState> {
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
-        final tmp = FloorResponse.fromJson(
+        final data = FloorResponse.fromJson(
             jsonDecode(res.body) as Map<String, dynamic>);
         state = state.copyWith(
           isLoading: false,
-          value: tmp.value,
+          data: data,
           elapse: 0,
         );
         elapsing();
@@ -53,13 +52,13 @@ class FloorViewModel extends StateNotifier<FloorState> {
     }
   }
 
-  void refresh() async {
+  void refreshSession() async {
     if (state.isLoading) return;
     try {
       _cancelTimer();
       state = state.copyWith(isLoading: true, error: "");
-      final res =
-          await _service.refreshFloorSession(_pref.getToken(), state.value);
+      final res = await _service.refreshFloorSession(
+          _pref.getToken(), state.data!.value);
       if (!mounted) return;
       if (res.statusCode == 200) {
         state = state.copyWith(isLoading: false, elapse: 0);

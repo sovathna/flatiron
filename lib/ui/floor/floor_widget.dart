@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:convert';
+
 import 'package:flatiron/data/data_module.dart';
 import 'package:flatiron/ui/floor/floor_state.dart';
 import 'package:flatiron/ui/floor/floor_view_model.dart';
@@ -16,11 +17,20 @@ final _viewModel = StateNotifierProvider.autoDispose
   ),
 );
 
+final _refreshController = Provider.autoDispose<RefreshController>(
+  (ref) {
+    final controller = RefreshController();
+    ref.onDispose(() {
+      controller.dispose();
+    });
+    return controller;
+  },
+);
+
 class FloorWidget extends ConsumerWidget {
-  FloorWidget(this._floor, {super.key});
+  const FloorWidget(this._floor, {super.key});
 
   final String _floor;
-  final _refreshController = RefreshController();
 
   void _getFloor(WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -32,14 +42,16 @@ class FloorWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     logger.d("build");
+
     _getFloor(ref);
     ref.listen(_viewModel(_floor), (prev, next) {
       if (!next.isLoading) {
-        _refreshController.refreshCompleted();
+        ref.read(_refreshController).refreshCompleted();
       }
     });
+
     return SmartRefresher(
-      controller: _refreshController,
+      controller: ref.watch(_refreshController),
       onRefresh: () => ref.read(_viewModel(_floor).notifier).getFloor(),
       child: SingleChildScrollView(
         child: Padding(
@@ -78,9 +90,9 @@ class _RetryWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoading =
         ref.watch(_viewModel(_floor).select((value) => value.isLoading));
-    final isValue =
-        ref.watch(_viewModel(_floor).select((value) => value.value)).isNotEmpty;
-    if (isLoading && !isValue) return const SizedBox.shrink();
+    final hasValue =
+        ref.watch(_viewModel(_floor).select((value) => value.hasValue));
+    if (isLoading && !hasValue) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: ElevatedButton(
@@ -105,7 +117,8 @@ class _ErrorWidget extends ConsumerWidget {
     if (error.isEmpty) {
       return const SizedBox.shrink();
     }
-    final value = ref.watch(_viewModel(_floor).select((value) => value.value));
+    final hasValue =
+        ref.watch(_viewModel(_floor).select((value) => value.hasValue));
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Column(
@@ -119,7 +132,7 @@ class _ErrorWidget extends ConsumerWidget {
                 .bodyLarge
                 ?.copyWith(color: Theme.of(context).colorScheme.error),
           ),
-          value.isEmpty
+          !hasValue
               ? ElevatedButton(
                   onPressed: ref.read(_viewModel(_floor).notifier).getFloor,
                   child: const Text("Retry"),
@@ -137,8 +150,12 @@ class _FooterWidget extends ConsumerWidget {
   final String _floor;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(_viewModel(_floor));
-    return state.value.isNotEmpty
+    final isLoading =
+        ref.watch(_viewModel(_floor).select((value) => value.isLoading));
+    final hasValue =
+        ref.watch(_viewModel(_floor).select((value) => value.hasValue));
+
+    return hasValue
         ? Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
@@ -154,8 +171,9 @@ class _FooterWidget extends ConsumerWidget {
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: ref.read(_viewModel(_floor).notifier).refresh,
-                      child: state.isLoading
+                      onPressed:
+                          ref.read(_viewModel(_floor).notifier).refreshSession,
+                      child: isLoading
                           ? const SizedBox(
                               width: 18,
                               height: 18,
@@ -181,19 +199,13 @@ class _QrImageWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(_viewModel(_floor).select((value) => value.value));
-    final color =
-        Theme.of(context).brightness == Brightness.light ? "1C1B1F" : "1A1C19";
-    final backColor =
-        Theme.of(context).brightness == Brightness.light ? "FCFDF7" : "1A1C19";
-    final child = value.isNotEmpty
-        ? CachedNetworkImage(
-            fadeInDuration: const Duration(milliseconds: 250),
-            fadeOutDuration: const Duration(milliseconds: 200),
-            placeholder: (context, url) =>
-                const Center(child: CircularProgressIndicator()),
-            imageUrl:
-                "https://qrcode.tec-it.com/API/QRCode?backcolor=$backColor&color=$color&data=$value",
+    final hasValue =
+        ref.watch(_viewModel(_floor).select((value) => value.hasValue));
+    final imageData =
+        ref.watch(_viewModel(_floor).select((value) => value.data?.imageData));
+    final child = hasValue
+        ? Image.memory(
+            const Base64Decoder().convert(imageData!.split("base64,")[1]),
             fit: BoxFit.cover,
           )
         : const Center(child: CircularProgressIndicator());
