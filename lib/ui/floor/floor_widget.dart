@@ -31,10 +31,10 @@ class FloorWidget extends ConsumerStatefulWidget {
 
   const FloorWidget(this.floor, {super.key});
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => FloorWidgetState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _FloorWidgetState();
 }
 
-class FloorWidgetState extends ConsumerState<FloorWidget>
+class _FloorWidgetState extends ConsumerState<FloorWidget>
     with WidgetsBindingObserver {
   String get _floor => widget.floor;
 
