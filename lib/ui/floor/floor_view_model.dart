@@ -16,6 +16,7 @@ class FloorViewModel extends StateNotifier<FloorState> {
   final AppPreferences _pref;
   final AppService _service;
   Timer? _timer;
+  int _elapsed = 0;
 
   void getFloor() async {
     if (state.isLoading) return;
@@ -31,12 +32,8 @@ class FloorViewModel extends StateNotifier<FloorState> {
       if (res.statusCode == 200) {
         final data = FloorResponse.fromJson(
             jsonDecode(res.body) as Map<String, dynamic>);
-        state = state.copyWith(
-          isLoading: false,
-          data: data,
-          elapse: 0,
-        );
-        elapsing();
+        state = state.copyWith(isLoading: false, data: data);
+        _elapsing();
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -52,7 +49,7 @@ class FloorViewModel extends StateNotifier<FloorState> {
     }
   }
 
-  void refreshSession() async {
+  void _refreshSession() async {
     if (state.isLoading) return;
     try {
       _cancelTimer();
@@ -61,8 +58,8 @@ class FloorViewModel extends StateNotifier<FloorState> {
           _pref.getToken(), state.data!.value);
       if (!mounted) return;
       if (res.statusCode == 200) {
-        state = state.copyWith(isLoading: false, elapse: 0);
-        elapsing();
+        state = state.copyWith(isLoading: false);
+        _elapsing();
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -78,13 +75,16 @@ class FloorViewModel extends StateNotifier<FloorState> {
     }
   }
 
-  void elapsing() {
+  void _elapsing() {
+    _elapsed = 0;
     _cancelTimer();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
         if (!mounted) _cancelTimer();
-        state = state.copyWith(elapse: state.elapse + 1);
+        _elapsed = _elapsed + 1;
+        // logger.d("elapsed: $_elapsed");
+        if (_elapsed > 30) _refreshSession();
       },
     );
   }

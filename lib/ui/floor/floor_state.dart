@@ -7,28 +7,21 @@ class FloorState {
   final FloorResponse? data;
   final bool isLoading;
   final String error;
-  final int elapse;
 
-  const FloorState({
-    this.isInit = true,
-    this.data,
-    this.isLoading = false,
-    this.error = "",
-    this.elapse = 0,
-  });
+  const FloorState(
+      {this.isInit = true, this.data, this.isLoading = false, this.error = ""});
 
-  FloorState copyWith(
-      {bool? isInit,
-      bool? isLoading,
-      FloorResponse? data,
-      String? error,
-      int? elapse}) {
+  FloorState copyWith({
+    bool? isInit,
+    bool? isLoading,
+    FloorResponse? data,
+    String? error,
+  }) {
     return FloorState(
       isInit: isInit ?? this.isInit,
       isLoading: isLoading ?? this.isLoading,
       data: data ?? this.data,
       error: error ?? this.error,
-      elapse: elapse ?? this.elapse,
     );
   }
 

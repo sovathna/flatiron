@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flatiron/data/data_module.dart';
 import 'package:flatiron/ui/floor/floor_state.dart';
 import 'package:flatiron/ui/floor/floor_view_model.dart';
-import 'package:flatiron/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -27,23 +26,44 @@ final _refreshController = Provider.autoDispose<RefreshController>(
   },
 );
 
-class FloorWidget extends ConsumerWidget {
-  const FloorWidget(this._floor, {super.key});
+class FloorWidget extends ConsumerStatefulWidget {
+  final String floor;
 
-  final String _floor;
+  const FloorWidget(this.floor, {super.key});
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => FloorWidgetState();
+}
 
-  void _getFloor(WidgetRef ref) {
+class FloorWidgetState extends ConsumerState<FloorWidget>
+    with WidgetsBindingObserver {
+  String get _floor => widget.floor;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      ref.read(_viewModel(_floor).notifier).getFloor();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (!ref.read(_viewModel(_floor)).isInit) return;
       ref.read(_viewModel(_floor).notifier).getFloor();
     });
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    logger.d("build");
-
-    _getFloor(ref);
     ref.listen(_viewModel(_floor), (prev, next) {
       if (!next.isLoading) {
         ref.read(_refreshController).refreshCompleted();
@@ -71,7 +91,6 @@ class FloorWidget extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       _QrImageWidget(_floor),
-                      _FooterWidget(_floor),
                       _ErrorWidget(_floor),
                     ],
                   ),
@@ -80,29 +99,6 @@ class FloorWidget extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _RetryWidget extends ConsumerWidget {
-  const _RetryWidget(this._floor);
-  final String _floor;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading =
-        ref.watch(_viewModel(_floor).select((value) => value.isLoading));
-    final hasValue =
-        ref.watch(_viewModel(_floor).select((value) => value.hasValue));
-    if (isLoading && !hasValue) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 16.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(shape: const CircleBorder()),
-        onPressed:
-            isLoading ? null : ref.read(_viewModel(_floor).notifier).getFloor,
-        child: const Icon(Icons.refresh),
       ),
     );
   }
@@ -147,54 +143,6 @@ class _ErrorWidget extends ConsumerWidget {
   }
 }
 
-class _FooterWidget extends ConsumerWidget {
-  const _FooterWidget(this._floor);
-
-  final String _floor;
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading =
-        ref.watch(_viewModel(_floor).select((value) => value.isLoading));
-    final hasValue =
-        ref.watch(_viewModel(_floor).select((value) => value.hasValue));
-
-    return hasValue
-        ? Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _ElapseWidget(_floor),
-                  ),
-                ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      onPressed:
-                          ref.read(_viewModel(_floor).notifier).refreshSession,
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text("Refresh session"),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        : const SizedBox.shrink();
-  }
-}
-
 class _QrImageWidget extends ConsumerWidget {
   const _QrImageWidget(this._floor);
 
@@ -215,25 +163,9 @@ class _QrImageWidget extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 32),
       child: FractionallySizedBox(
-        widthFactor: 0.7,
+        widthFactor: 0.75,
         child: AspectRatio(aspectRatio: 1.0, child: child),
       ),
-    );
-  }
-}
-
-class _ElapseWidget extends ConsumerWidget {
-  const _ElapseWidget(this._floor);
-
-  final String _floor;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final elapse =
-        ref.watch(_viewModel(_floor).select((value) => value.elapse));
-    return Text(
-      "Session elapsed ${elapse}s",
-      style: Theme.of(context).textTheme.bodySmall,
     );
   }
 }
